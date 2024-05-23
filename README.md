@@ -1,4 +1,4 @@
-# Image Processing Telegram Bot
+# Telegram Bot: Any Meter Manager & Values Recognition
 
 Image processing telegram bot with tensorflow lite and opencv using python
 
