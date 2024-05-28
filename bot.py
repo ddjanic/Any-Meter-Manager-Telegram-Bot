@@ -71,7 +71,8 @@ def gray_image_next_step(message):
         image_result = filters.image2gray(image)
         photo = image_to_message_photo(image_result)
         if photo is not None:
-            bot.send_photo(message.chat.id, photo)
+            #bot.send_photo(message.chat.id, photo)
+            bot.send_photo(message.chat.id, photo, reply_to_message_id=message.message_id)
         else:
             bot.send_message(message.chat.id, "Something went wrong 😭")
 
