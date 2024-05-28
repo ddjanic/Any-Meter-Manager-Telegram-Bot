@@ -3,3 +3,6 @@ opencv-python-headless
 pillow
 qrcode
 tensorflow-cpu
+scipy
+insightface
+onnxruntime

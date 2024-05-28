@@ -15,8 +15,8 @@ from src.face_parts_detector import FacePartsDetector
 
 
 load_dotenv()
-Token = os.getenv("Token")
-bot = telebot.TeleBot(Token)
+#Token = os.getenv("Token")
+bot = telebot.TeleBot("7088157183:AAHW9mQ_iWKdUmiijz6nlBYmoiZtIteX6Os")
 
 markup = types.ReplyKeyboardMarkup(row_width=4)
 itembtn1 = types.KeyboardButton('+')
@@ -202,4 +202,4 @@ def process_qrcode_step(message):
         bot.send_message(message.chat.id, "Something went wrong 😭")
 
 
-bot.polling()
+bot.polling(none_stop=True)
