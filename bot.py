@@ -105,7 +105,7 @@ def water_image_next_step(message):
                            reply_to_message_id=message.message_id,
                            caption='Вода: показания на - '+date_time)
         else:
-            bot.send_message(message.chat.id, "Something went wrong 😭")
+            bot.send_message(message.chat.id, "Что-то пошло не так 😭")
 
 @bot.message_handler(commands=['besco'])
 def send_pencil_sketch(message):
