@@ -12,9 +12,15 @@ from src import filters
 import config
 from dotenv import load_dotenv
 from src.face_parts_detector import FacePartsDetector
-
+# date time stamp
+from datetime import datetime
 
 load_dotenv()
+
+# date time stamp
+now = datetime.now() # current date and time
+date_time = now.strftime("%m/%d/%Y, %H:%M:%S")
+
 #Token = os.getenv("Token")
 bot = telebot.TeleBot("7088157183:AAHW9mQ_iWKdUmiijz6nlBYmoiZtIteX6Os")
 
@@ -72,7 +78,10 @@ def gray_image_next_step(message):
         photo = image_to_message_photo(image_result)
         if photo is not None:
             #bot.send_photo(message.chat.id, photo)
-            bot.send_photo(message.chat.id, photo, reply_to_message_id= message.message_id)
+            bot.send_photo(message.chat.id, 
+                           photo, 
+                           reply_to_message_id=message.message_id,
+                           caption='Вода: показания на - '+date_time)
         else:
             bot.send_message(message.chat.id, "Something went wrong 😭")
 
