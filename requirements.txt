@@ -17,3 +17,5 @@ deskew
 typing
 pyyaml
 pycocotools
+torch
+torchvision
