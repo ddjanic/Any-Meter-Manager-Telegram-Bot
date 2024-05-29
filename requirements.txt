@@ -19,3 +19,7 @@ pyyaml
 pycocotools
 torch
 torchvision
+cython
+pyyaml
+pycocotools
+pandas
