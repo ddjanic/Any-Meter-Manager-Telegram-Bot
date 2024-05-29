@@ -85,6 +85,27 @@ def gray_image_next_step(message):
         else:
             bot.send_message(message.chat.id, "Something went wrong 😭")
 
+##### water meter recognition
+@bot.message_handler(commands=['water'])
+def water_image(message):
+    bot.send_message(message.chat.id, "Пришлите изображение/фото счётчика для снятия показаний")
+    bot.register_next_step_handler(message, water_image_next_step)
+
+##### water meter recognition
+@bot.message_handler(content_types=['photo'])
+def water_image_next_step(message):
+    if message.content_type == 'photo':
+        image = message_photo_to_image(message)
+        image_result = filters.image2gray(image)
+        photo = image_to_message_photo(image_result)
+        if photo is not None:
+            #bot.send_photo(message.chat.id, photo)
+            bot.send_photo(message.chat.id, 
+                           photo, 
+                           reply_to_message_id=message.message_id,
+                           caption='Вода: показания на - '+date_time)
+        else:
+            bot.send_message(message.chat.id, "Something went wrong 😭")
 
 @bot.message_handler(commands=['besco'])
 def send_pencil_sketch(message):
