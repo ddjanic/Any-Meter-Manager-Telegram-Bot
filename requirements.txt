@@ -23,3 +23,5 @@ cython
 pyyaml
 pycocotools
 pandas
+git+https://github.com/qubvel/segmentation_models
+git+https://github.com/facebookresearch/detectron2.git
