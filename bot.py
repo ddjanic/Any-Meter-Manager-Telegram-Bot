@@ -100,6 +100,16 @@ def water_image(message):
 def water_image_next_step(message):
     if message.content_type == 'photo':
         image = message_photo_to_image(message)
+        
+        #################
+        file_info = bot.get_file(message.photo[len(message.photo)-1].file_id)
+        downloaded_file = bot.download_file(file_info.file_path)
+        src = "/opt/bot_data/" + file_info.file_path
+        with open(src, "wb") as new_file:
+            new_file.write(downloaded_file)
+        #################
+        reading = filters.get_reading(src)
+        #################
         image_result = filters.image2gray(image)
         photo = image_to_message_photo(image_result)
         if photo is not None:
@@ -107,7 +117,7 @@ def water_image_next_step(message):
             bot.send_photo(message.chat.id, 
                            photo, 
                            reply_to_message_id=message.message_id,
-                           caption='Вода: показания на - '+date_time)
+                           caption='Вода: показания на - '+date_time+" "+reading)
         else:
             bot.send_message(message.chat.id, "Что-то пошло не так 😭")
 
