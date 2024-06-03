@@ -141,9 +141,7 @@ def segment_input_img(img):
     preprocess_input = sm.get_preprocessing(BACKBONE)
     img_small = preprocess_input(img_small)
     img_small = img_small.reshape(-1, 224, 224, 3).astype('uint8')
-    model_pre = tf.keras.layers.TFSMLayer(segmentation_model_file)
-    #model = tf.saved_model.load(model_pre, custom_objects={'binary_crossentropy_plus_jaccard_loss': sm.losses.bce_jaccard_loss, 'iou_score' : sm.metrics.iou_score})
-    model = tf.keras.models.load_model(model_pre, custom_objects={'binary_crossentropy_plus_jaccard_loss': sm.losses.bce_jaccard_loss, 'iou_score' : sm.metrics.iou_score})
+    model = tf.keras.models.load_model(segmentation_model_file, custom_objects={'binary_crossentropy_plus_jaccard_loss': sm.losses.bce_jaccard_loss, 'iou_score' : sm.metrics.iou_score})
     mask = model.predict(img_small)
 
     #Change type to uint8 and fill in holes.
