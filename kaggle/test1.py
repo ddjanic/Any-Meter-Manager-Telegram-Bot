@@ -12,6 +12,10 @@ from sklearn.model_selection import train_test_split
 import decimal
 import shutil
 
+##########################################################################################################        
+## stage 1
+##########################################################################################################  
+
 def skip(line, cell=None):
     '''Skips execution of the current line/cell if line evaluates to True.'''
     if eval(line):
@@ -93,3 +97,86 @@ for ax in axes:
 #Plot the image.
 fig.tight_layout()    
 plt.show()
+
+#Examine the head of the 'data' DataFrame
+pd.set_option('display.max_colwidth', 0)
+print(data.head())
+
+#Create function to extract polygon locations from 'location' string.
+def location_vals(obvs, x_or_y):
+    '''
+    Function uses regular expressions to parse the "location" string for each observation.
+    Inputs are "obvs" and "x_or_y".
+    
+    obvs: This simply serves as the string being passed into the function.
+    x_or_y: If "x" is entered, then the function extracts all "x" location values. If anything else, then it extracts "y" location values.
+    '''
+    if x_or_y == 'x':
+        x = re.findall(r"\'x\': ([0-9.]*),", obvs)
+        return x
+    else:
+        y = re.findall(r"\'y\': ([0-9.]*)}", obvs)
+        return y
+    
+#Create new column with x and y location values.
+data['x_loc_perc'] = data['location'].apply(lambda obvs: location_vals(obvs, 'x'))
+data['y_loc_perc'] = data['location'].apply(lambda obvs: location_vals(obvs, 'y'))
+print(data.head())
+
+#Creat function to return image size.
+def image_size(img_name):
+    '''
+    The image name from each observation serves as the input.
+    The image is then read using cv2, and its shape is returned.
+    '''
+    image_path = os.path.join(images_folder, img_name)
+    img = cv2.imread(image_path)
+    return img.shape
+
+#Apply function to each row of DataFrame.
+data['shape'] = data['photo_name'].apply(image_size)
+print(data.head())
+
+#Save height and weight data as separate features.
+data['height'] = data['shape'].apply(lambda x: x[0])
+data['width'] = data['shape'].apply(lambda x: x[1])
+
+#Display stats for height and width of images.
+print(data[['height', 'width']].describe())
+
+#Make sure that similar all files in each folder have the same location.
+for i, j, k in zip(os.listdir(masks_folder), \
+                   os.listdir(images_folder), \
+                   os.listdir(coll_folder)):
+    if (i == j) & (j == k):
+        pass
+    else:
+        print(f'File {i} in one folder does not match name in others.')
+
+##########################################################################################################        
+## stage 2
+##########################################################################################################  
+
+#Create arrays 
+y = np.zeros((1244, 224, 224), dtype='float32')
+X = np.zeros((1244, 224, 224, 3), dtype='float32')
+
+for n, image, mask in tqdm(zip(range(1244), os.listdir(images_folder), os.listdir(masks_folder))):
+    dir_img = os.path.join(images_folder, image)
+    dir_mask = os.path.join(masks_folder, mask)
+    
+    #Open image, resize it.
+    img = cv2.imread(dir_img)
+    img = cv2.resize(img, (224, 224))
+    #img = ImageOps.exif_transpose(img)
+    X[n] = img 
+    
+    #Open mask image, resize and normalize it.
+    msk = cv2.imread(dir_mask)
+    msk = cv2.resize(msk, (224, 224))
+    
+    #Normalize mask values.
+    msk = 1.0 * (msk[:, :, 0] > .1)
+    
+    #Save mask array to y array.
+    y[n] = msk   
