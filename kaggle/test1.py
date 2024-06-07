@@ -3,7 +3,9 @@ import re, cv2, os, json
 import numpy as np
 import pandas as pd
 import tensorflow as tf
+import h5py
 import matplotlib.pyplot as plt
+import segmentation_models as sm
 import seaborn as sns
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from PIL import Image, ImageOps
@@ -180,3 +182,50 @@ for n, image, mask in tqdm(zip(range(1244), os.listdir(images_folder), os.listdi
     
     #Save mask array to y array.
     y[n] = msk   
+    
+    #Create function to plot images used with segmentation. 
+def plot_seg_imgs(array_or_collage, name):
+    '''
+    This function can be called to print 4 images used with the segmentation model.
+    array_or_collage - Accepts any values for arrays, from training arrays to predicted outputs.
+        Also accepts 'collage': If this is input, then 4 images from the collages folder will be printed.
+    name - What name would you like printed with the number of each image plotted.
+    '''
+    axes=[]
+    fig=plt.figure(figsize=(15, 15))
+
+    for a in range(4):
+        
+        #Print the resized image and dislpay the shape.
+        axes.append(fig.add_subplot(1, 4, a+1))
+        subplot_title=(f"{name} Image #{a} Resized")
+        axes[-1].set_title(subplot_title)  
+        
+        if str(array_or_collage) == 'collage':
+            img = cv2.imread(os.path.join(coll_folder, os.listdir(coll_folder)[a]))
+            img = cv2.resize(img, (224, 224))
+            plt.imshow(img)
+        else:
+            plt.imshow(array_or_collage[a].astype('uint8'))
+            
+    #Remove ticks from each image.
+    for ax in axes:
+        ax.set_xticks([])
+        ax.set_yticks([])
+
+    #Plot the image.
+    fig.tight_layout()    
+    plt.show()
+    
+#Print first 4 resized meter, resized mask, and collage images.
+plot_seg_imgs(X,'Meter Image')
+plot_seg_imgs(y, 'Mask')
+plot_seg_imgs('collage', 'Collage Image')
+
+#Split data into train and test set.
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+
+##########################################################################################################        
+## stage 3
+##########################################################################################################
+
