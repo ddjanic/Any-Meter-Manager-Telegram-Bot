@@ -229,3 +229,63 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 ## stage 3
 ##########################################################################################################
 
+sm.set_framework('tf.keras')
+sm.framework()
+
+BACKBONE = 'resnet34'
+preprocess_input = sm.get_preprocessing(BACKBONE)
+
+# preprocess input
+X_train = preprocess_input(X_train)
+X_test = preprocess_input(X_test)
+
+#Optimizer
+opt = tf.keras.optimizers.Adam(learning_rate=0.0001)
+
+# define model
+model = sm.Unet(BACKBONE, encoder_weights='imagenet')
+model.compile(
+    opt,
+    loss=sm.losses.bce_jaccard_loss,
+    metrics=[sm.metrics.iou_score],
+)
+
+try: 
+    #fname = os.path.sep.join([os.getcwd(), "weights-file.hdf5"])
+    fname = './weights-file.hdf5'
+    print('Weights file loaded.')
+except:
+    pass
+
+model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
+    filepath='./new_weights_output.hdf5',
+    save_weights_only=False,
+    monitor='val_iou_score',
+    mode='max',
+    save_best_only=True,
+    verbose=1)
+
+early_stopping = tf.keras.callbacks.EarlyStopping(monitor='loss', patience=15)
+
+if os.path.isfile(fname) == True:
+    model.load_weights(fname)
+
+# fit model
+model.fit(
+   x=X_train,
+   y=y_train,
+   batch_size=16,
+   epochs=10, #Only 10, since we've pretrained the model.
+   validation_data=(X_test, y_test),
+   callbacks=[model_checkpoint_callback, early_stopping]
+)
+
+model.export('final_segmentation_model')
+
+# The model weights (that are considered the best) are loaded into the model.
+#model.load_weights(fname)
+
+# Examine predictions for training images.
+plot_seg_imgs(X_train, 'Train Images')
+plot_seg_imgs(model.predict(X_train), 'Train Predictions')
+plot_seg_imgs(y_train, 'Train Ground Truths')
