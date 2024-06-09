@@ -8,3 +8,5 @@ output
 kaggle/weights.hdf5
 kaggle/new_weights_output.hdf5.zip
 kaggle/weights-file.hdf5
+kaggle/new_weights_output.hdf5
+kaggle/weights-file.h5

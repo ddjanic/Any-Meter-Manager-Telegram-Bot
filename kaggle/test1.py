@@ -252,13 +252,13 @@ model.compile(
 
 try: 
     #fname = os.path.sep.join([os.getcwd(), "weights-file.hdf5"])
-    fname = './weights-file.hdf5'
+    fname = './weights-file.h5'
     print('Weights file loaded.')
 except:
     pass
 
 model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
-    filepath='./new_weights_output.hdf5',
+    filepath='./new_weights_output.keras',
     save_weights_only=False,
     monitor='val_iou_score',
     mode='max',
