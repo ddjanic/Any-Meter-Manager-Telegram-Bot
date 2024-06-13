@@ -56,7 +56,7 @@ for img, mask in zip(imgs[:5], masks[:5]):
     plt.axis('off')
     plt.title("Ground truth")
 
-plt.show()
+#plt.show()
 
 print(data.head())
 
@@ -145,7 +145,7 @@ for img, mask in zip(out_rgb[:5], out_mask[:5]):
     plt.axis('off')
     plt.title("Resized Ground truth")
     
-plt.show()
+#plt.show()
 
 from sklearn.model_selection import train_test_split
 
@@ -195,7 +195,7 @@ def dice_coef(y_true, y_pred, smooth=1):
 
 callbacks = [
     tf.keras.callbacks.EarlyStopping(monitor="val_loss", mode="min", patience=15),
-    tf.keras.callbacks.ModelCheckpoint(filepath='water_meters.h5', monitor = 'val_loss', verbose = 1, save_best_only = True, mode = 'min'),
+    tf.keras.callbacks.ModelCheckpoint(filepath='./water_meters.keras', monitor = 'val_loss', verbose = 1, save_best_only = True, mode = 'min'),
     tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.5, 
                                    patience=5, 
                                    verbose=1, mode='min', min_delta=0.0001, cooldown=2, min_lr=1e-6)   
@@ -228,5 +228,5 @@ def FocalLoss(targets, inputs, alpha=ALPHA, gamma=GAMMA):
 
 model = sm.Unet('efficientnetb0', classes=1, input_shape=(256, 256, 3), activation='sigmoid', encoder_weights='imagenet')
 model.compile(optimizer=tf.keras.optimizers.Adam(0.001), loss=FocalLoss, metrics = [dice_coef] )
-
-model.fit_generator(generator=make_image_gen(X_train, y_train, aug, 16), steps_per_epoch = 200, epochs=50, callbacks = callbacks,validation_data = (X_test, y_test))
+generator = make_image_gen(X_train, y_train, aug, 16)
+model.fit(generator, steps_per_epoch = 200, epochs=50, callbacks = callbacks,validation_data = (X_test, y_test))
