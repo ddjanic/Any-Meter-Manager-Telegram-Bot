@@ -204,8 +204,8 @@ callbacks = [
 def DiceLoss(targets, inputs, smooth=1e-6):
     
     #flatten label and prediction tensors
-    inputs = K.flatten(inputs)
-    targets = K.flatten(targets)
+    inputs = tf.keras.layers.Flatten()(inputs)
+    targets = tf.keras.layers.Flatten()(targets)
     
     intersection = K.sum(K.dot(targets, inputs))
     dice = (2*intersection + smooth) / (K.sum(targets) + K.sum(inputs) + smooth)
@@ -217,8 +217,8 @@ GAMMA = 2
 
 def FocalLoss(targets, inputs, alpha=ALPHA, gamma=GAMMA):    
     
-    inputs = K.flatten(inputs)
-    targets = K.flatten(targets)
+    inputs = tf.keras.layers.Flatten()(inputs)
+    targets = tf.keras.layers.Flatten()(targets)
     
     BCE = K.binary_crossentropy(targets, inputs)
     BCE_EXP = K.exp(-BCE)
