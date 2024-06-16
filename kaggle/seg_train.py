@@ -189,9 +189,9 @@ aug_x, aug_y = next(train_gen)
 print(np.shape(aug_x), np.shape(aug_y))
 
 def dice_coef(y_true, y_pred, smooth=1):
-    intersection = K.sum(y_true * y_pred, axis=[1,2,3])
-    union = K.sum(y_true, axis=[1,2,3]) + K.sum(y_pred, axis=[1,2,3])
-    dice = K.mean((2. * intersection + smooth)/(union + smooth), axis=0)
+    intersection = tf.keras.backend.sum(y_true * y_pred, axis=[1,2,3])
+    union = tf.keras.backend.sum(y_true, axis=[1,2,3]) + tf.keras.backend.sum(y_pred, axis=[1,2,3])
+    dice = tf.keras.backend.mean((2. * intersection + smooth)/(union + smooth), axis=0)
     return dice
 
 callbacks = [
@@ -208,8 +208,8 @@ def DiceLoss(targets, inputs, smooth=1e-6):
     inputs = tf.keras.layers.Flatten()(inputs)
     targets = tf.keras.layers.Flatten()(targets)
     
-    intersection = K.sum(K.dot(targets, inputs))
-    dice = (2*intersection + smooth) / (K.sum(targets) + K.sum(inputs) + smooth)
+    intersection = tf.keras.backend.sum(tf.keras.backend.dot(targets, inputs))
+    dice = (2*intersection + smooth) / (tf.keras.backend.sum(targets) + tf.keras.backend.sum(inputs) + smooth)
     return 1 - dice
 
 
@@ -221,9 +221,9 @@ def FocalLoss(targets, inputs, alpha=ALPHA, gamma=GAMMA):
     inputs = tf.keras.layers.Flatten()(inputs)
     targets = tf.keras.layers.Flatten()(targets)
     
-    BCE = K.binary_crossentropy(targets, inputs)
-    BCE_EXP = K.exp(-BCE)
-    focal_loss = K.mean(alpha * K.pow((1-BCE_EXP), gamma) * BCE)
+    BCE = tf.keras.losses.binary_crossentropy(targets, inputs)
+    BCE_EXP = tf.keras.backend.exp(-BCE)
+    focal_loss = tf.keras.backend.mean(alpha * tf.math.pow((1-BCE_EXP), gamma) * BCE)
     
     return focal_loss
 
