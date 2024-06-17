@@ -5,6 +5,9 @@ __pycache__
 input
 output
 .env
+ocr_crop
+resized_for_rcnn
+rotated_imgs
 kaggle/weights.hdf5
 kaggle/new_weights_output.hdf5.zip
 kaggle/weights-file.hdf5

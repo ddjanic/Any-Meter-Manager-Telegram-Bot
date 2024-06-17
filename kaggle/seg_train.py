@@ -1,3 +1,4 @@
+#############################
 import cv2, os, re
 import numpy as np
 import pandas as pd
@@ -12,13 +13,16 @@ import albumentations as A
 import segmentation_models as sm
 import keras.backend as K
 from keras.layers import Flatten
-sm.set_framework('tf.keras')
+#############################
 from skimage import io
 from skimage.color import rgb2gray
 from skimage.transform import rotate
 from deskew import determine_skew
 #import torch, torchvision
+import os, sys
+#############################
 
+sm.set_framework('tf.keras')
 sm.framework()
 
 BASE_DIR = ''
@@ -227,12 +231,12 @@ def FocalLoss(targets, inputs, alpha=ALPHA, gamma=GAMMA):
     
     return focal_loss
 
-'''
+
 model = sm.Unet('efficientnetb0', classes=1, input_shape=(256, 256, 3), activation='sigmoid', encoder_weights='imagenet')
 model.compile(optimizer=tf.keras.optimizers.Adam(0.001), loss=FocalLoss, metrics = [dice_coef] )
 generator = make_image_gen(X_train, y_train, aug, 16)
-model.fit(generator, steps_per_epoch = 200, epochs=50, callbacks = callbacks,validation_data = (X_test, y_test))
-'''
+#model.fit(generator, steps_per_epoch = 200, epochs=50, callbacks = callbacks,validation_data = (X_test, y_test))
+
 
 preds = model.predict(X_test)
 
@@ -256,3 +260,96 @@ for img, pred, mask in zip(X_test[:5], preds[:5], y_test[:5]):
     plt.imshow(mask, interpolation=None)
     plt.axis('off')
     plt.title("Ground truth")
+    
+#Create function to crop images.
+def crop(img, bg, mask) -> np.array:
+    '''
+    Function takes image, background, and mask, and crops the image.
+    The cropped image should correspond only with the positive portion of the mask.
+    '''
+    fg = cv2.bitwise_or(img, img, mask=mask) 
+    fg_back_inv = cv2.bitwise_or(bg, bg, mask=cv2.bitwise_not(mask))
+    New_image = cv2.bitwise_or(fg, fg_back_inv)
+    return New_image
+
+ocr_path = 'ocr_crop'
+
+for n, image, mask in zip(range(len(os.listdir(IMG_DIR))), os.listdir(IMG_DIR), os.listdir(MASK_DIR)):
+    dir_img = os.path.join(IMG_DIR, image)
+    dir_mask = os.path.join(MASK_DIR, mask)
+    
+    #Read images and masks.
+    img = cv2.imread(dir_img).astype('uint8')
+    mask = cv2.imread(dir_mask).astype('uint8')
+    
+    #Get dimensions of image.
+    h, w, _ = img.shape
+    
+    #Ensure mask is binary, and create black background in shape of image.
+    mask = cv2.resize(cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY), (w, h)) # Resize image
+    bg = np.zeros_like(img, 'uint8') # Black background
+
+    #Crop image based on mask and make it RBG.
+    New_image = crop(img,bg,mask)
+    New_image = cv2.cvtColor(New_image, cv2.COLOR_BGR2RGB)
+
+    #Extract portion of image where meter reading is.
+    #Use min and max x and y coordinates to obtain final image.
+    where = np.array(np.where(New_image))
+    x1, y1, z1 = np.amin(where, axis=1)
+    x2, y2, z2 = np.amax(where, axis=1)
+    sub_image = New_image.astype('uint8')[x1:x2, y1:y2]
+
+    #Write image to file
+    cv2.imwrite(os.path.join(ocr_path , image), sub_image)
+
+for img in imgs:
+    img_path = os.path.join(OCR_CROP, img)
+    rotated_img_path = os.path.join(ROTATED_DIR, img)#.split('.jpg')[0]+'.png')
+    image = io.imread(img_path)
+    grayscale = rgb2gray(image)
+    angle = determine_skew(grayscale)
+    rotated = rotate(image, angle, resize=True) * 255
+    io.imsave(rotated_img_path, rotated.astype(np.uint8))
+    
+rotated = os.listdir(ROTATED_DIR)
+print(f"Rotated files :  {len(rotated)}. ---> {rotated[:3]}")
+
+
+def resize_aspect_fit(path, final_size: int, write_to, save=True):
+    '''
+    Function resizes the image to specified size.
+    
+    path - The path to the directory with images.
+    final_size - The size you want the final images to be. Should be in int (will be used for w and h).
+    write_to - The file you wish to write the images to. 
+    save - Whether to save the files (True) or return them.
+    '''   
+    for item in os.listdir(path):
+        im = Image.open(path+item)
+        f, e = os.path.splitext(path+item)
+        size = im.size
+        ratio = float(final_size) / max(size)
+        new_image_size = tuple([int(x*ratio) for x in size])
+        im = im.resize(new_image_size, Image.Resampling.LANCZOS)
+        new_im = Image.new("RGB", (final_size, final_size))
+        new_im.paste(im, ((final_size-new_image_size[0])//2, (final_size-new_image_size[1])//2))
+        if save==True:
+            cv2.imwrite(os.path.join(resize_for_rcnn, item), np.array(new_im))
+        else:
+            return np.array(new_im)
+        
+#Reshape all images to 224x224x3 size, while retaining aspect. 
+#IMPORTANT FOR PREPROCESSING IMAGES
+
+if os.path.exists('./resized_for_rcnn') == False:
+    os.mkdir('resized_for_rcnn')
+else:
+    pass
+
+#Specify argument values for resize function.
+resize_for_rcnn = './resized_for_rcnn'
+path = './ocr_crop/'
+final_size = 224
+
+resize_aspect_fit(path, final_size, resize_for_rcnn)
