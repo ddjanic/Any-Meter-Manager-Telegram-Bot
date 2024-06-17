@@ -226,7 +226,32 @@ def FocalLoss(targets, inputs, alpha=ALPHA, gamma=GAMMA):
     
     return focal_loss
 
+'''
 model = sm.Unet('efficientnetb0', classes=1, input_shape=(256, 256, 3), activation='sigmoid', encoder_weights='imagenet')
 model.compile(optimizer=tf.keras.optimizers.Adam(0.001), loss=FocalLoss, metrics = [dice_coef] )
 generator = make_image_gen(X_train, y_train, aug, 16)
 model.fit(generator, steps_per_epoch = 200, epochs=50, callbacks = callbacks,validation_data = (X_test, y_test))
+'''
+
+preds = model.predict(X_test)
+
+rows = 1
+columns = 3
+
+for img, pred, mask in zip(X_test[:5], preds[:5], y_test[:5]):
+    
+    fig = plt.figure(figsize=(10, 7))
+    fig.add_subplot(rows, columns, 1)
+    plt.imshow(img)
+    plt.axis('off')
+    plt.title("Image")
+    
+    fig.add_subplot(rows, columns, 2)
+    plt.imshow(pred, interpolation=None)
+    plt.axis('off')
+    plt.title("Prediction")
+    
+    fig.add_subplot(rows, columns, 3)
+    plt.imshow(mask, interpolation=None)
+    plt.axis('off')
+    plt.title("Ground truth")
