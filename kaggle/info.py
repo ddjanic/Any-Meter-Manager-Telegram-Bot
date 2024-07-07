@@ -1,17 +1,15 @@
 import sys
-import numpy as np
-import tensorflow as tf
-from datetime import datetime
 
-with tf.device('/cpu:0'):
-    ran_matrix = tf.random.uniform(shape='cpu', minval=0, maxval=1)
-    d_operation = tf.matmul(ran_matrix, tf.transpose(ran_matrix))
-    sum_op = tf.reduce_sum(d_operation)
-    start = datetime.now()
-with tf.Session(config=tf.ConfigProto(log_device_placement=True)) as session:
-    res = session.run(sum_op)
-    print(res)
-    print("\n" * 6)
-    print("Shape:", 'cpu', "Device:", '/cpu:0')
-    print("Time done:", datetime.now() - startTime)
-    print("\n" * 6)
+import tensorflow.keras
+import pandas as pd
+import sklearn as sk
+import tensorflow as tf
+
+print(f"Tensor Flow Version: {tf.__version__}")
+print(f"Keras Version: {tensorflow.keras.__version__}")
+print()
+print(f"Python {sys.version}")
+print(f"Pandas {pd.__version__}")
+print(f"Scikit-Learn {sk.__version__}")
+gpu = len(tf.config.list_physical_devices('GPU'))>0
+print("GPU is", "available" if gpu else "NOT AVAILABLE")
